@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Notes App</title>
+</head>
+<body>
+    <h1>Notes App</h1>
+
+    <input type="text" id="noteInput" placeholder="Enter note">
+    <button onclick="addNote()">Add</button>
+
+    <ul id="notesList"></ul>
+
+    <script>
+        async function loadNotes() {
+            let res = await fetch('/notes');
+            let data = await res.json();
+
+            let list = document.getElementById('notesList');
+            list.innerHTML = '';
+
+            data.forEach(note => {
+                let li = document.createElement('li');
+                li.textContent = note.content;
+                list.appendChild(li);
+            });
+        }
+
+        async function addNote() {
+            let input = document.getElementById('noteInput');
+
+            await fetch('/notes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: input.value })
+            });
+
+            input.value = '';
+            loadNotes();
+        }
+
+        loadNotes();
+    </script>
+</body>
+</html>
