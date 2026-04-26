@@ -55,6 +55,7 @@
       background: #fafafa;
       border: 1px solid #ddd;
       border-radius: 8px;
+      margin-bottom: 15px;
     }
     .tag {
       display: inline-block;
@@ -64,6 +65,11 @@
       border-radius: 20px;
       font-size: 14px;
       margin-right: 8px;
+    }
+    #saved-notes-container {
+      margin-top: 30px;
+      border-top: 2px solid #eee;
+      padding-top: 20px;
     }
   </style>
 </head>
@@ -78,15 +84,67 @@
     <label for="note">Note</label>
     <textarea id="note" placeholder="Write your note here..."></textarea>
 
-    <button>Save Note</button>
+    <button onclick="saveNote()">Save Note</button>
 
-    <div class="notes-box">
-      <h2>Preview</h2>
-      <p><strong>Sample Note Title</strong></p>
-      <p>This area can show your saved note or a preview of your writing.</p>
-      <span class="tag">Study</span>
-      <span class="tag">Important</span>
+    <div id="saved-notes-container">
+        <h2>Saved Notes</h2>
+        <div id="notes-list">
+            </div>
     </div>
   </div>
+
+  <script>
+    // Load notes when the page loads
+    window.onload = function() {
+        loadNotes();
+    };
+
+    async function saveNote() {
+        const title = document.getElementById('title').value;
+        const content = document.getElementById('note').value;
+
+        if(!title || !content) {
+            alert("Please fill in both title and note content.");
+            return;
+        }
+
+        const requestData = { title: title, content: content };
+
+        const response = await fetch('/api/notes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        });
+
+        if(response.ok) {
+            // Clear inputs and reload the list
+            document.getElementById('title').value = '';
+            document.getElementById('note').value = '';
+            loadNotes();
+        }
+    }
+
+    async function loadNotes() {
+        const response = await fetch('/api/notes');
+        const notes = await response.json();
+        
+        const notesList = document.getElementById('notes-list');
+        notesList.innerHTML = ''; // Clear current list
+
+        // Render each note using the provided CSS classes
+        notes.forEach(note => {
+            const noteDiv = document.createElement('div');
+            noteDiv.className = 'notes-box';
+            noteDiv.innerHTML = `
+                <p><strong>${note.title}</strong></p>
+                <p>${note.content}</p>
+                <span class="tag">Saved</span>
+            `;
+            notesList.appendChild(noteDiv);
+        });
+    }
+  </script>
 </body>
 </html>
