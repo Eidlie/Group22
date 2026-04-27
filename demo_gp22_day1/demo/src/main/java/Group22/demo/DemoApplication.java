@@ -20,20 +20,8 @@ import org.springframework.security.web.SecurityFilterChain;
 public class DemoApplication {
 	@GetMapping("/")
     public String home() {
-        return "redirect:/index.html";
+        return "redirect:/index.html";//redirect:/index.html
     }
-	@Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                .anyRequest().permitAll()
-            );
-
-        return http.build();
-	}
-
-
 
 	public static void main(String[] args) {
 		SpringApplication.run(DemoApplication.class, args);
