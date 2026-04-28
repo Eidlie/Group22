@@ -10,7 +10,6 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
   <div class="container">
     <a class="navbar-brand" href="index.html">Notes List</a>
-    
   </div>
 </nav>
 
@@ -21,48 +20,63 @@
   </div>
 
   <div id="notes" class="row">
-    <p class="text-muted">Loading notes...</p>
+    <p class="text-muted" id="loading-text">Loading notes...</p>
   </div>
 </div>
 
 <script>
+/* Fetches the list of notes from the server and handles rendering or connection failures */
 async function load() {
-  let res = await fetch('/notes');
-  let data = await res.json();
   let container = document.getElementById('notes');
   
-  if (data.length === 0) {
-    container.innerHTML = '<p>No notes found.</p>';
-    return;
-  }
+  try {
+    let res = await fetch('/notes');
+    
+    if (!res.ok) {
+      throw new Error("Network response was not ok");
+    }
+    
+    let data = await res.json();
+    
+    if (data.length === 0) {
+      /* Displays a fallback message when the database query returns an empty list */
+      container.innerHTML = '<p class="text-muted">No notes.</p>';
+      return;
+    }
 
-  container.innerHTML = '';
-  data.forEach(n => {
-    let card = `
-      <div class="col-md-4">
-        <div class="card mb-4 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">${n.title}</h5>
-            <p class="card-text">${n.content}</p>
-            <div class="d-flex gap-2">
-              <a href="edit.html?id=${n.id}" class="btn btn-warning btn-sm">Edit</a>
-              <button class="btn btn-danger btn-sm" onclick="del(${n.id})">Delete</button>
+    container.innerHTML = ''; 
+    data.forEach(n => {
+      let card = `
+        <div class="col-md-4">
+          <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">${n.title}</h5>
+              <p class="card-text">${n.content}</p>
+              <div class="d-flex gap-2">
+                <a href="edit.html?id=${n.id}" class="btn btn-warning btn-sm">Edit</a>
+                <button class="btn btn-danger btn-sm" onclick="del(${n.id})">Delete</button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    `;
-    container.innerHTML += card;
-  });
-}
-
-async function del(id) {
-  if(confirm('Are you sure you want to delete this note?')) {
-    await fetch('/notes/' + id, { method: 'DELETE' });
-    load();
+      `;
+      container.innerHTML += card;
+    });
+  } catch (error) {
+    /* Displays an error message if the database or server connection fails */
+    container.innerHTML = '<p class="text-danger fw-bold">Fail to connect database.</p>';
   }
 }
 
+/* Sends a delete request to the server for a specific note ID and reloads the list */
+async function del(id) {
+  if(confirm('Are you sure you want to delete this note?')) {
+    await fetch('/notes/' + id, { method: 'DELETE' });
+    load(); 
+  }
+}
+
+/* Initializes the data load when the script runs */
 load();
 </script>
 </body>
