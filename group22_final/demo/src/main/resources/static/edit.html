@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Edit Note</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+  <div class="container">
+    <a class="navbar-brand" href="index.html">MyNotes</a>
+    <div class="navbar-nav">
+      <a class="nav-link" href="index.html">Add Note</a>
+      <a class="nav-link" href="notes.html">All Notes</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="card shadow-sm p-4">
+    <h2>Edit Note</h2>
+    <form onsubmit="updateNote(event)">
+      <input type="hidden" id="id">
+      <div class="mb-3">
+        <label class="form-label">Title</label>
+        <input type="text" id="title" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Content</label>
+        <textarea id="content" class="form-control" rows="5" required></textarea>
+      </div>
+      <button class="btn btn-success">Update Note</button>
+      <a href="notes.html" class="btn btn-secondary">Cancel</a>
+    </form>
+  </div>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+
+async function loadNote() {
+  if (!id) return;
+  let res = await fetch('/notes/' + id);
+  let note = await res.json();
+  document.getElementById('id').value = note.id;
+  document.getElementById('title').value = note.title;
+  document.getElementById('content').value = note.content;
+}
+
+async function updateNote(e) {
+  e.preventDefault();
+  await fetch('/notes/' + id, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title: document.getElementById('title').value,
+      content: document.getElementById('content').value
+    })
+  });
+  window.location.href = "notes.html";
+}
+
+loadNote();
+</script>
+</body>
+</html>
